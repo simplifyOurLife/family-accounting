@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.TransactionMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="TransactionResultMap" type="com.family.accounting.entity.Transaction">
+        <id property="id" column="id"/>
+        <result property="accountBookId" column="account_book_id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="type" column="type"/>
+        <result property="amount" column="amount"/>
+        <result property="note" column="note"/>
+        <result property="transactionDate" column="transaction_date"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, account_book_id, category_id, user_id, type, amount, note, 
+        transaction_date, created_at, updated_at
+    </sql>
+    
+    <!-- 根据ID查询交易记录 -->
+    <select id="findById" resultMap="TransactionResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_transaction
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 分页查询账本的交易记录 -->
+    <select id="findByAccountBookId" resultMap="TransactionResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_transaction
+        WHERE account_book_id = #{accountBookId}
+        <if test="startDate != null">
+            AND transaction_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND transaction_date &lt;= #{endDate}
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        ORDER BY transaction_date DESC, created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 统计账本的交易记录数量 -->
+    <select id="countByAccountBookId" resultType="int">
+        SELECT COUNT(1)
+        FROM t_transaction
+        WHERE account_book_id = #{accountBookId}
+        <if test="startDate != null">
+            AND transaction_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND transaction_date &lt;= #{endDate}
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+    </select>
+    
+    <!-- 根据用户ID查询交易记录 -->
+    <select id="findByUserId" resultMap="TransactionResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_transaction
+        WHERE user_id = #{userId}
+        ORDER BY transaction_date DESC, created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 根据分类ID查询交易记录数量 -->
+    <select id="countByCategoryId" resultType="int">
+        SELECT COUNT(1)
+        FROM t_transaction
+        WHERE category_id = #{categoryId}
+    </select>
+    
+    <!-- 根据账本ID查询交易记录数量 -->
+    <select id="countByAccountBook" resultType="int">
+        SELECT COUNT(1)
+        FROM t_transaction
+        WHERE account_book_id = #{accountBookId}
+    </select>
+    
+    <!-- 插入新交易记录 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.Transaction" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_transaction (account_book_id, category_id, user_id, type, amount, note, transaction_date)
+        VALUES (#{accountBookId}, #{categoryId}, #{userId}, #{type}, #{amount}, #{note}, #{transactionDate})
+    </insert>
+    
+    <!-- 更新交易记录 -->
+    <update id="update" parameterType="com.family.accounting.entity.Transaction">
+        UPDATE t_transaction
+        <set>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="amount != null">amount = #{amount},</if>
+            <if test="note != null">note = #{note},</if>
+            <if test="transactionDate != null">transaction_date = #{transactionDate},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除交易记录 -->
+    <delete id="deleteById">
+        DELETE FROM t_transaction WHERE id = #{id}
+    </delete>
+    
+    <!-- 根据账本ID删除所有交易记录 -->
+    <delete id="deleteByAccountBookId">
+        DELETE FROM t_transaction WHERE account_book_id = #{accountBookId}
+    </delete>
+    
+</mapper>

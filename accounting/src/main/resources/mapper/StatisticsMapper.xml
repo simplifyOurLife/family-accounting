@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.StatisticsMapper">
+    
+    <!-- 按日期范围统计收入总额 -->
+    <select id="sumIncomeByDateRange" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM t_transaction
+        WHERE account_book_id = #{accountBookId}
+          AND type = 2
+          AND transaction_date &gt;= #{startDate}
+          AND transaction_date &lt;= #{endDate}
+    </select>
+    
+    <!-- 按日期范围统计支出总额 -->
+    <select id="sumExpenseByDateRange" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM t_transaction
+        WHERE account_book_id = #{accountBookId}
+          AND type = 1
+          AND transaction_date &gt;= #{startDate}
+          AND transaction_date &lt;= #{endDate}
+    </select>
+    
+    <!-- 按分类统计金额 -->
+    <select id="sumByCategory" resultType="java.util.Map">
+        SELECT 
+            t.category_id as categoryId,
+            c.name as categoryName,
+            c.icon as categoryIcon,
+            COALESCE(SUM(t.amount), 0) as amount,
+            COUNT(t.id) as count
+        FROM t_transaction t
+        LEFT JOIN t_category c ON t.category_id = c.id
+        WHERE t.account_book_id = #{accountBookId}
+          AND t.type = #{type}
+          AND t.transaction_date &gt;= #{startDate}
+          AND t.transaction_date &lt;= #{endDate}
+        GROUP BY t.category_id, c.name, c.icon
+        ORDER BY amount DESC
+    </select>
+    
+</mapper>

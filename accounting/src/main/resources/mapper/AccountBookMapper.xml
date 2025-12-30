@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.AccountBookMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="AccountBookResultMap" type="com.family.accounting.entity.AccountBook">
+        <id property="id" column="id"/>
+        <result property="familyId" column="family_id"/>
+        <result property="name" column="name"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, family_id, name, is_default, created_at, updated_at
+    </sql>
+    
+    <!-- 根据ID查询账本 -->
+    <select id="findById" resultMap="AccountBookResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_account_book
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据家庭ID查询所有账本 -->
+    <select id="findByFamilyId" resultMap="AccountBookResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_account_book
+        WHERE family_id = #{familyId}
+        ORDER BY is_default DESC, created_at ASC
+    </select>
+    
+    <!-- 根据家庭ID查询默认账本 -->
+    <select id="findDefaultByFamilyId" resultMap="AccountBookResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_account_book
+        WHERE family_id = #{familyId} AND is_default = 1
+        LIMIT 1
+    </select>
+    
+    <!-- 插入新账本 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.AccountBook" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_account_book (family_id, name, is_default)
+        VALUES (#{familyId}, #{name}, #{isDefault})
+    </insert>
+    
+    <!-- 更新账本 -->
+    <update id="update" parameterType="com.family.accounting.entity.AccountBook">
+        UPDATE t_account_book
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="isDefault != null">is_default = #{isDefault},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除账本 -->
+    <delete id="deleteById">
+        DELETE FROM t_account_book WHERE id = #{id}
+    </delete>
+    
+    <!-- 设置默认账本 -->
+    <update id="setDefault">
+        UPDATE t_account_book
+        SET is_default = 1
+        WHERE family_id = #{familyId} AND id = #{id}
+    </update>
+    
+    <!-- 清除家庭的默认账本标记 -->
+    <update id="clearDefault">
+        UPDATE t_account_book
+        SET is_default = 0
+        WHERE family_id = #{familyId}
+    </update>
+    
+    <!-- 统计家庭账本数量 -->
+    <select id="countByFamilyId" resultType="int">
+        SELECT COUNT(1)
+        FROM t_account_book
+        WHERE family_id = #{familyId}
+    </select>
+    
+    <!-- 统计账本下的交易数量 -->
+    <select id="countTransactionsByAccountBookId" resultType="int">
+        SELECT COUNT(1)
+        FROM t_transaction
+        WHERE account_book_id = #{accountBookId}
+    </select>
+    
+</mapper>

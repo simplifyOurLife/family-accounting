@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.FamilyMemberMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="FamilyMemberResultMap" type="com.family.accounting.entity.FamilyMember">
+        <id property="id" column="id"/>
+        <result property="familyId" column="family_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="joinedAt" column="joined_at"/>
+    </resultMap>
+    
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, family_id, user_id, nickname, joined_at
+    </sql>
+    
+    <!-- 根据ID查询成员 -->
+    <select id="findById" resultMap="FamilyMemberResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_family_member
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据家庭ID和用户ID查询成员 -->
+    <select id="findByFamilyIdAndUserId" resultMap="FamilyMemberResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_family_member
+        WHERE family_id = #{familyId} AND user_id = #{userId}
+    </select>
+    
+    <!-- 根据用户ID查询成员记录 -->
+    <select id="findByUserId" resultMap="FamilyMemberResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_family_member
+        WHERE user_id = #{userId}
+        LIMIT 1
+    </select>
+    
+    <!-- 根据家庭ID查询所有成员 -->
+    <select id="findByFamilyId" resultMap="FamilyMemberResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_family_member
+        WHERE family_id = #{familyId}
+        ORDER BY joined_at ASC
+    </select>
+    
+    <!-- 插入新成员 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.FamilyMember" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_family_member (family_id, user_id, nickname)
+        VALUES (#{familyId}, #{userId}, #{nickname})
+    </insert>
+    
+    <!-- 更新成员昵称 -->
+    <update id="updateNickname">
+        UPDATE t_family_member
+        SET nickname = #{nickname}
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除成员 -->
+    <delete id="deleteById">
+        DELETE FROM t_family_member WHERE id = #{id}
+    </delete>
+    
+    <!-- 根据家庭ID和用户ID删除成员 -->
+    <delete id="deleteByFamilyIdAndUserId">
+        DELETE FROM t_family_member 
+        WHERE family_id = #{familyId} AND user_id = #{userId}
+    </delete>
+    
+    <!-- 统计家庭成员数量 -->
+    <select id="countByFamilyId" resultType="int">
+        SELECT COUNT(1)
+        FROM t_family_member
+        WHERE family_id = #{familyId}
+    </select>
+    
+</mapper>

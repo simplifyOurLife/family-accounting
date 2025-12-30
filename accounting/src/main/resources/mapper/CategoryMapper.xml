@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.CategoryMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="CategoryResultMap" type="com.family.accounting.entity.Category">
+        <id property="id" column="id"/>
+        <result property="familyId" column="family_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="icon" column="icon"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+    
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, family_id, parent_id, name, type, icon, sort_order, created_at
+    </sql>
+    
+    <!-- 根据ID查询分类 -->
+    <select id="findById" resultMap="CategoryResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_category
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据家庭ID和类型查询分类列表 -->
+    <select id="findByFamilyIdAndType" resultMap="CategoryResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_category
+        WHERE family_id = #{familyId} AND type = #{type}
+        ORDER BY sort_order ASC, id ASC
+    </select>
+    
+    <!-- 根据家庭ID查询所有分类 -->
+    <select id="findByFamilyId" resultMap="CategoryResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_category
+        WHERE family_id = #{familyId}
+        ORDER BY type ASC, sort_order ASC, id ASC
+    </select>
+    
+    <!-- 根据父分类ID查询子分类 -->
+    <select id="findByParentId" resultMap="CategoryResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_category
+        WHERE parent_id = #{parentId}
+        ORDER BY sort_order ASC, id ASC
+    </select>
+    
+    <!-- 插入新分类 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.Category" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_category (family_id, parent_id, name, type, icon, sort_order)
+        VALUES (#{familyId}, #{parentId}, #{name}, #{type}, #{icon}, #{sortOrder})
+    </insert>
+    
+    <!-- 更新分类 -->
+    <update id="update" parameterType="com.family.accounting.entity.Category">
+        UPDATE t_category
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="icon != null">icon = #{icon},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除分类 -->
+    <delete id="deleteById">
+        DELETE FROM t_category WHERE id = #{id}
+    </delete>
+    
+    <!-- 统计分类下的交易数量 -->
+    <select id="countTransactionsByCategoryId" resultType="int">
+        SELECT COUNT(1)
+        FROM t_transaction
+        WHERE category_id = #{categoryId}
+    </select>
+    
+    <!-- 统计家庭分类数量 -->
+    <select id="countByFamilyId" resultType="int">
+        SELECT COUNT(1)
+        FROM t_category
+        WHERE family_id = #{familyId}
+    </select>
+    
+</mapper>

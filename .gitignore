@@ -1,0 +1,44 @@
+HELP.md
+target/
+.svn
+!**/src/main/**
+!**/src/test/**
+/logs/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+*.xlsx
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/*/dist
+/nbdist/
+/.nb-gradle/
+node_modules/
+
+
+### VS Code ###
+.vscode/
+**/*.jar
+**/*.zip
+/dim-data-front/dim-data1/
+/dim-data-front/dist/
+/package-lock.json
+/dim-data-front/package-lock.json
+
+
+### Kiro ###
+.kiro

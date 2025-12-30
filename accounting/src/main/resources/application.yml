@@ -1,0 +1,31 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  datasource:
+    url: jdbc:mysql://local-mysql-serve:7799/money-keeper-dev?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: money-keeper-dev
+    password: AxXSY5zNXGnDBxh7
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.family.accounting.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+jwt:
+  secret: ${JWT_SECRET:family-accounting-secret-key-2024}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+logging:
+  level:
+    com.family.accounting: DEBUG
+    org.springframework.security: DEBUG

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.FamilyMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="FamilyResultMap" type="com.family.accounting.entity.Family">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="adminId" column="admin_id"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+    
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, name, admin_id, created_at, updated_at
+    </sql>
+    
+    <!-- 根据ID查询家庭 -->
+    <select id="findById" resultMap="FamilyResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_family
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据管理员ID查询家庭 -->
+    <select id="findByAdminId" resultMap="FamilyResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_family
+        WHERE admin_id = #{adminId}
+    </select>
+    
+    <!-- 插入新家庭 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.Family" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_family (name, admin_id)
+        VALUES (#{name}, #{adminId})
+    </insert>
+    
+    <!-- 更新家庭信息 -->
+    <update id="update" parameterType="com.family.accounting.entity.Family">
+        UPDATE t_family
+        <set>
+            <if test="name != null">name = #{name},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除家庭 -->
+    <delete id="deleteById">
+        DELETE FROM t_family WHERE id = #{id}
+    </delete>
+    
+</mapper>

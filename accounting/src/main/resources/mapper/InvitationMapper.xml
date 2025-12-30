@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.InvitationMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="InvitationResultMap" type="com.family.accounting.entity.Invitation">
+        <id property="id" column="id"/>
+        <result property="familyId" column="family_id"/>
+        <result property="inviterId" column="inviter_id"/>
+        <result property="inviteeId" column="invitee_id"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="expiredAt" column="expired_at"/>
+    </resultMap>
+    
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, family_id, inviter_id, invitee_id, status, created_at, expired_at
+    </sql>
+    
+    <!-- 根据ID查询邀请 -->
+    <select id="findById" resultMap="InvitationResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_invitation
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据被邀请人ID查询待处理邀请列表 -->
+    <select id="findPendingByInviteeId" resultMap="InvitationResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_invitation
+        WHERE invitee_id = #{inviteeId} AND status = 0
+        ORDER BY created_at DESC
+    </select>
+    
+    <!-- 根据家庭ID查询邀请列表 -->
+    <select id="findByFamilyId" resultMap="InvitationResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_invitation
+        WHERE family_id = #{familyId}
+        ORDER BY created_at DESC
+    </select>
+    
+    <!-- 检查是否存在待处理的邀请 -->
+    <select id="existsPendingInvitation" resultType="int">
+        SELECT COUNT(1)
+        FROM t_invitation
+        WHERE family_id = #{familyId} AND invitee_id = #{inviteeId} AND status = 0
+    </select>
+    
+    <!-- 插入新邀请 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.Invitation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_invitation (family_id, inviter_id, invitee_id, status, expired_at)
+        VALUES (#{familyId}, #{inviterId}, #{inviteeId}, #{status}, #{expiredAt})
+    </insert>
+    
+    <!-- 更新邀请状态 -->
+    <update id="updateStatus">
+        UPDATE t_invitation
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除邀请 -->
+    <delete id="deleteById">
+        DELETE FROM t_invitation WHERE id = #{id}
+    </delete>
+    
+</mapper>
