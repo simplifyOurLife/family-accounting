@@ -100,8 +100,14 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth !== false)
 
   if (requiresAuth && !token) {
-    next('/login')
+    // 需要认证但没有 token，跳转到登录页
+    if (to.path !== '/login') {
+      next('/login')
+    } else {
+      next()
+    }
   } else if (!requiresAuth && token && (to.path === '/login' || to.path === '/register')) {
+    // 已登录用户访问登录/注册页，跳转到首页
     next('/')
   } else {
     next()

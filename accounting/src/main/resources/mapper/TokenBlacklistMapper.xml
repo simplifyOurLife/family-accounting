@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.TokenBlacklistMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="TokenBlacklistResultMap" type="com.family.accounting.entity.TokenBlacklist">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="token_hash" property="tokenHash"/>
+        <result column="reason" property="reason"/>
+        <result column="token_expired_at" property="tokenExpiredAt"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <!-- 插入黑名单记录 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.TokenBlacklist" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_token_blacklist (
+            user_id,
+            token_hash,
+            reason,
+            token_expired_at,
+            created_at
+        ) VALUES (
+            #{userId},
+            #{tokenHash},
+            #{reason},
+            #{tokenExpiredAt},
+            #{createdAt}
+        )
+    </insert>
+
+    <!-- 检查令牌是否在黑名单中 -->
+    <select id="existsByTokenHash" parameterType="string" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM t_token_blacklist
+        WHERE token_hash = #{tokenHash}
+        AND token_expired_at > NOW()
+    </select>
+
+    <!-- 根据用户ID将所有令牌加入黑名单 -->
+    <insert id="invalidateAllTokensByUserId">
+        INSERT INTO t_token_blacklist (
+            user_id,
+            token_hash,
+            reason,
+            token_expired_at,
+            created_at
+        ) VALUES (
+            #{userId},
+            CONCAT('USER_', #{userId}, '_', UNIX_TIMESTAMP(NOW())),
+            #{reason},
+            #{maxExpiredAt},
+            NOW()
+        )
+    </insert>
+
+    <!-- 清理已过期的黑名单记录 -->
+    <delete id="cleanupExpiredTokens">
+        DELETE FROM t_token_blacklist
+        WHERE token_expired_at &lt; #{currentTime}
+    </delete>
+
+</mapper>

@@ -28,6 +28,15 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private SecurityService securityService;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
+    @Autowired
+    private CaptchaService captchaService;
+
     /**
      * 用户注册
      *
@@ -36,6 +45,11 @@ public class UserService {
      */
     @Transactional
     public UserVO register(RegisterDTO dto) {
+        // 验证图片验证码
+        if (!captchaService.verifyCaptcha(dto.getCaptchaKey(), dto.getCaptchaCode())) {
+            throw new BusinessException("图片验证码错误或已过期");
+        }
+
         // 检查手机号是否已注册
         if (userMapper.existsByPhone(dto.getPhone()) > 0) {
             throw new BusinessException("该手机号已注册");
@@ -57,32 +71,54 @@ public class UserService {
     /**
      * 用户登录
      *
-     * @param dto 登录信息
+     * @param dto       登录信息
+     * @param ipAddress IP地址
      * @return Token信息
      */
-    public TokenVO login(LoginDTO dto) {
-        // 查询用户
-        User user = userMapper.findByPhone(dto.getPhone());
-        if (user == null) {
-            throw new BusinessException("用户不存在");
+    public TokenVO login(LoginDTO dto, String ipAddress) {
+        // 安全检查：IP限制和账户锁定
+        securityService.validateLoginSecurity(dto.getPhone(), ipAddress);
+
+        try {
+            // 验证图片验证码
+            if (!captchaService.verifyCaptcha(dto.getCaptchaKey(), dto.getCaptchaCode())) {
+                // 记录失败的登录尝试
+                securityService.recordLoginAttempt(dto.getPhone(), ipAddress, false);
+                throw new BusinessException("图片验证码错误或已过期");
+            }
+
+            // 查询用户
+            User user = userMapper.findByPhone(dto.getPhone());
+            if (user == null) {
+                // 记录失败的登录尝试
+                securityService.recordLoginAttempt(dto.getPhone(), ipAddress, false);
+                throw new BusinessException("用户不存在");
+            }
+
+            // 验证密码
+            if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+                // 记录失败的登录尝试
+                securityService.recordLoginAttempt(dto.getPhone(), ipAddress, false);
+                throw new BusinessException("密码错误");
+            }
+
+            // 登录成功，记录成功的登录尝试
+            securityService.recordLoginAttempt(dto.getPhone(), ipAddress, true);
+
+            // 生成token
+            String token = jwtUtil.generateToken(user.getId(), user.getPhone());
+
+            // 返回token信息
+            TokenVO tokenVO = new TokenVO();
+            tokenVO.setToken(token);
+            tokenVO.setUserId(user.getId());
+            tokenVO.setPhone(user.getPhone());
+            tokenVO.setNickname(user.getNickname());
+
+            return tokenVO;
+        } catch (BusinessException e) {
+            throw e;
         }
-
-        // 验证密码
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new BusinessException("密码错误");
-        }
-
-        // 生成token
-        String token = jwtUtil.generateToken(user.getId(), user.getPhone());
-
-        // 返回token信息
-        TokenVO tokenVO = new TokenVO();
-        tokenVO.setToken(token);
-        tokenVO.setUserId(user.getId());
-        tokenVO.setPhone(user.getPhone());
-        tokenVO.setNickname(user.getNickname());
-
-        return tokenVO;
     }
 
     /**
@@ -136,6 +172,9 @@ public class UserService {
         // 更新密码
         String encodedPassword = passwordEncoder.encode(newPassword);
         userMapper.updatePassword(userId, encodedPassword);
+
+        // 使所有现有JWT令牌失效
+        tokenBlacklistService.invalidateAllUserTokens(userId, "密码修改");
     }
 
     /**

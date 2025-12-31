@@ -122,7 +122,7 @@ export default {
         交通: 'logistics',
         购物: 'shopping-cart-o',
         娱乐: 'music-o',
-        医疗: 'first-aid-o',
+        医疗: 'add-o', // 使用 add-o 图标，更符合医疗加号标志
         教育: 'bookmark-o',
         居住: 'home-o',
         通讯: 'phone-o',
@@ -208,12 +208,12 @@ export default {
       align-items: center;
       justify-content: center;
       gap: 2px;
-      
+
       .hint-text {
         font-size: 10px;
         color: #969799;
       }
-      
+
       .expand-icon {
         font-size: 10px;
         color: #969799;

@@ -1,8 +1,11 @@
 package com.family.accounting.config;
 
+import com.family.accounting.security.IpRateLimitFilter;
 import com.family.accounting.security.JwtAuthenticationEntryPoint;
 import com.family.accounting.security.JwtAuthenticationFilter;
+import com.family.accounting.service.TokenBlacklistService;
 import com.family.accounting.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +35,12 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
+    @Autowired
+    private IpRateLimitFilter ipRateLimitFilter;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
     public SecurityConfig(JwtUtil jwtUtil, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.jwtUtil = jwtUtil;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
@@ -39,7 +48,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtil);
+        return new JwtAuthenticationFilter(jwtUtil, tokenBlacklistService);
     }
 
     @Bean
@@ -81,12 +90,16 @@ public class SecurityConfig {
                 .antMatchers(
                         "/api/auth/register",
                         "/api/auth/login",
+                        "/api/auth/captcha",
                         "/error",
                         "/actuator/**"
                 ).permitAll()
                 // 其他所有请求需要认证
                 .anyRequest().authenticated();
 
+        // 添加IP速率限制过滤器
+        http.addFilterBefore(ipRateLimitFilter, UsernamePasswordAuthenticationFilter.class);
+        
         // 添加JWT过滤器
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 

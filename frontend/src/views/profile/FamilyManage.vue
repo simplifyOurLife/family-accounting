@@ -149,7 +149,7 @@ export default {
           console.log('User has no family')
         }
       }
-      
+
       if (this.hasFamily) {
         await this.loadMembers()
       }

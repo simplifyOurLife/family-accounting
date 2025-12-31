@@ -117,3 +117,55 @@ CREATE TABLE IF NOT EXISTS t_transaction (
     CONSTRAINT fk_trans_category FOREIGN KEY (category_id) REFERENCES t_category(id) ON DELETE RESTRICT,
     CONSTRAINT fk_trans_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='交易记录表';
+-- =====================================================
+-- 8. 图片验证码表 (t_captcha)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS t_captcha (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '验证码ID',
+    captcha_key VARCHAR(36) NOT NULL COMMENT '验证码唯一标识(UUID)',
+    code VARCHAR(10) NOT NULL COMMENT '验证码内容',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    expired_at DATETIME NOT NULL COMMENT '过期时间',
+    UNIQUE KEY uk_captcha_key (captcha_key),
+    INDEX idx_expired (expired_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='图片验证码表';
+
+-- =====================================================
+-- 9. 登录尝试记录表 (t_login_attempt)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS t_login_attempt (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '记录ID',
+    phone VARCHAR(20) COMMENT '手机号',
+    ip_address VARCHAR(45) NOT NULL COMMENT 'IP地址',
+    success TINYINT NOT NULL COMMENT '是否成功: 0-失败 1-成功',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_phone_time (phone, created_at),
+    INDEX idx_ip_time (ip_address, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录尝试记录表';
+
+-- =====================================================
+-- 10. IP请求记录表 (t_ip_request)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS t_ip_request (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '记录ID',
+    ip_address VARCHAR(45) NOT NULL COMMENT 'IP地址',
+    request_path VARCHAR(255) COMMENT '请求路径',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_ip_time (ip_address, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IP请求记录表';
+
+-- =====================================================
+-- 11. JWT令牌黑名单表 (t_token_blacklist)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS t_token_blacklist (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '记录ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    token_hash VARCHAR(255) NOT NULL COMMENT '令牌hash值',
+    reason VARCHAR(100) NOT NULL COMMENT '失效原因',
+    token_expired_at DATETIME NOT NULL COMMENT '令牌原始过期时间',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_token_hash (token_hash),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expired_at (token_expired_at),
+    CONSTRAINT fk_blacklist_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='JWT令牌黑名单表';

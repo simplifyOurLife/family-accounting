@@ -1,5 +1,6 @@
 package com.family.accounting.security;
 
+import com.family.accounting.service.TokenBlacklistService;
 import com.family.accounting.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +28,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, TokenBlacklistService tokenBlacklistService) {
         this.jwtUtil = jwtUtil;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -40,26 +43,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = extractTokenFromRequest(request);
 
             if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
-                Long userId = jwtUtil.getUserIdFromToken(token);
-                String phone = jwtUtil.getPhoneFromToken(token);
+                // 检查令牌是否在黑名单中
+                if (tokenBlacklistService.isTokenBlacklisted(token)) {
+                    logger.debug("令牌已在黑名单中，拒绝访问");
+                } else {
+                    Long userId = jwtUtil.getUserIdFromToken(token);
+                    String phone = jwtUtil.getPhoneFromToken(token);
 
-                if (userId != null && phone != null) {
-                    // 创建认证用户信息
-                    JwtUserDetails userDetails = new JwtUserDetails(userId, phone);
+                    if (userId != null && phone != null) {
+                        // 创建认证用户信息
+                        JwtUserDetails userDetails = new JwtUserDetails(userId, phone);
 
-                    // 创建认证token
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    Collections.emptyList()
-                            );
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        // 创建认证token
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        Collections.emptyList()
+                                );
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // 设置到安全上下文
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                        // 设置到安全上下文
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    logger.debug("用户认证成功: userId={}, phone={}", userId, phone);
+                        logger.debug("用户认证成功: userId={}, phone={}", userId, phone);
+                    }
                 }
             }
         } catch (Exception e) {

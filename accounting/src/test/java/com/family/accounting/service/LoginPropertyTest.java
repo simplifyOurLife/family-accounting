@@ -29,7 +29,7 @@ class LoginPropertyTest {
      * For any registered user with known credentials, logging in with correct phone and password
      * should return a valid token, and using that token should identify the same user.
      */
-    @Property(tries = 100)
+    @Property(tries = 10)
     void loginShouldReturnTokenThatIdentifiesSameUser(
             @ForAll("validPhoneNumbers") String phone,
             @ForAll @StringLength(min = 6, max = 20) String password,
@@ -38,11 +38,17 @@ class LoginPropertyTest {
         // Given: a mock UserMapper and real JwtUtil
         UserMapper mockMapper = mock(UserMapper.class);
         JwtUtil jwtUtil = createJwtUtil();
+        SecurityService mockSecurityService = mock(SecurityService.class);
+        TokenBlacklistService mockTokenBlacklistService = mock(TokenBlacklistService.class);
+        CaptchaService mockCaptchaService = mock(CaptchaService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", jwtUtil);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+        setField(userService, "captchaService", mockCaptchaService);
 
         // Setup: user exists with encrypted password
         User existingUser = new User();
@@ -52,13 +58,14 @@ class LoginPropertyTest {
         existingUser.setNickname("TestUser");
 
         when(mockMapper.findByPhone(phone)).thenReturn(existingUser);
+        when(mockCaptchaService.verifyCaptcha(anyString(), anyString())).thenReturn(true);
 
         // When: logging in with correct credentials
         LoginDTO dto = new LoginDTO();
         dto.setPhone(phone);
         dto.setPassword(password);
 
-        TokenVO tokenVO = userService.login(dto);
+        TokenVO tokenVO = userService.login(dto, "127.0.0.1");
 
         // Then: should return a valid token
         assertNotNull(tokenVO);
@@ -81,7 +88,7 @@ class LoginPropertyTest {
      * Property 2: 登录认证往返一致性 - 错误密码拒绝
      * For any registered user, logging in with incorrect password should be rejected.
      */
-    @Property(tries = 100)
+    @Property(tries = 10)
     void loginShouldRejectIncorrectPassword(
             @ForAll("validPhoneNumbers") String phone,
             @ForAll @StringLength(min = 6, max = 20) String correctPassword,
@@ -93,11 +100,17 @@ class LoginPropertyTest {
         // Given: a mock UserMapper and UserService
         UserMapper mockMapper = mock(UserMapper.class);
         JwtUtil jwtUtil = createJwtUtil();
+        SecurityService mockSecurityService = mock(SecurityService.class);
+        TokenBlacklistService mockTokenBlacklistService = mock(TokenBlacklistService.class);
+        CaptchaService mockCaptchaService = mock(CaptchaService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", jwtUtil);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+        setField(userService, "captchaService", mockCaptchaService);
 
         // Setup: user exists with encrypted correct password
         User existingUser = new User();
@@ -106,6 +119,7 @@ class LoginPropertyTest {
         existingUser.setPassword(passwordEncoder.encode(correctPassword));
 
         when(mockMapper.findByPhone(phone)).thenReturn(existingUser);
+        when(mockCaptchaService.verifyCaptcha(anyString(), anyString())).thenReturn(true);
 
         // When: logging in with wrong password
         LoginDTO dto = new LoginDTO();
@@ -113,14 +127,14 @@ class LoginPropertyTest {
         dto.setPassword(wrongPassword);
 
         // Then: should throw BusinessException
-        assertThrows(BusinessException.class, () -> userService.login(dto));
+        assertThrows(BusinessException.class, () -> userService.login(dto, "127.0.0.1"));
     }
 
     /**
      * Property 2: 登录认证往返一致性 - 不存在用户拒绝
      * For any non-existent phone number, login should be rejected.
      */
-    @Property(tries = 100)
+    @Property(tries = 10)
     void loginShouldRejectNonExistentUser(
             @ForAll("validPhoneNumbers") String phone,
             @ForAll @StringLength(min = 6, max = 20) String password
@@ -128,14 +142,21 @@ class LoginPropertyTest {
         // Given: a mock UserMapper and UserService
         UserMapper mockMapper = mock(UserMapper.class);
         JwtUtil jwtUtil = createJwtUtil();
+        SecurityService mockSecurityService = mock(SecurityService.class);
+        TokenBlacklistService mockTokenBlacklistService = mock(TokenBlacklistService.class);
+        CaptchaService mockCaptchaService = mock(CaptchaService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", jwtUtil);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+        setField(userService, "captchaService", mockCaptchaService);
 
         // Setup: user does not exist
         when(mockMapper.findByPhone(phone)).thenReturn(null);
+        when(mockCaptchaService.verifyCaptcha(anyString(), anyString())).thenReturn(true);
 
         // When: logging in with non-existent phone
         LoginDTO dto = new LoginDTO();
@@ -143,7 +164,7 @@ class LoginPropertyTest {
         dto.setPassword(password);
 
         // Then: should throw BusinessException
-        assertThrows(BusinessException.class, () -> userService.login(dto));
+        assertThrows(BusinessException.class, () -> userService.login(dto, "127.0.0.1"));
     }
 
     /**

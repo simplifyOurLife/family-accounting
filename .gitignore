@@ -42,3 +42,7 @@ node_modules/
 
 ### Kiro ###
 .kiro
+
+
+### H2 ###
+/*/.jqwik-database

@@ -47,6 +47,30 @@
             { validator: validateConfirmPassword, message: '两次输入的密码不一致' }
           ]"
         />
+        <van-field
+          v-model="form.captchaCode"
+          name="captchaCode"
+          label="验证码"
+          placeholder="请输入图片验证码"
+          maxlength="4"
+          :rules="[
+            { required: true, message: '请输入验证码' },
+            { pattern: /^[a-zA-Z0-9]{4}$/, message: '验证码为4位字母或数字' }
+          ]"
+        >
+          <template #button>
+            <div class="captcha-wrapper" @click="refreshCaptcha">
+              <img
+                v-if="captchaImage"
+                :src="captchaImage"
+                alt="验证码"
+                class="captcha-image"
+              />
+              <van-loading v-else size="20" class="captcha-loading" />
+              <span class="captcha-tip">点击刷新</span>
+            </div>
+          </template>
+        </van-field>
         <div class="register-actions">
           <van-button
             round
@@ -71,7 +95,7 @@
 
 <script>
 import authApi from '@/api/modules/auth'
-import { Toast } from 'vant'
+import { Toast, Dialog } from 'vant'
 
 export default {
   name: 'Register',
@@ -80,12 +104,18 @@ export default {
       form: {
         phone: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        captchaCode: ''
       },
+      captchaKey: '',
+      captchaImage: '',
       showPassword: false,
       showConfirmPassword: false,
       loading: false
     }
+  },
+  mounted () {
+    this.refreshCaptcha()
   },
   methods: {
     validatePassword (val) {
@@ -94,21 +124,86 @@ export default {
     validateConfirmPassword (val) {
       return val === this.form.password
     },
+    async refreshCaptcha () {
+      this.captchaImage = ''
+      try {
+        const res = await authApi.getCaptcha()
+        if (res.code === 200 && res.data) {
+          this.captchaKey = res.data.captchaKey
+          this.captchaImage = res.data.captchaImage
+        } else {
+          Toast.fail('获取验证码失败')
+        }
+      } catch (error) {
+        Toast.fail('获取验证码失败，请重试')
+      }
+    },
+    handleErrorResponse (res) {
+      const errorCode = res.code
+      switch (errorCode) {
+        case 1001:
+          Toast.fail('验证码错误，请重新输入')
+          this.refreshCaptcha()
+          this.form.captchaCode = ''
+          break
+        case 1002:
+          Toast.fail('验证码已过期，请重新获取')
+          this.refreshCaptcha()
+          this.form.captchaCode = ''
+          break
+        case 1004:
+          Dialog.alert({
+            title: '账户已锁定',
+            message: '由于多次操作失败，您的账户已被临时锁定。请30分钟后再试。',
+            confirmButtonText: '我知道了'
+          })
+          break
+        case 1005:
+          Dialog.alert({
+            title: '访问受限',
+            message: '您的请求过于频繁，系统已暂时限制访问。请稍后再试。',
+            confirmButtonText: '我知道了'
+          })
+          break
+        case 1006:
+          Toast.fail('该手机号已注册，请直接登录')
+          break
+        default:
+          Toast.fail(res.message || '操作失败')
+      }
+    },
+    handleError (error) {
+      if (error.response && error.response.data) {
+        this.handleErrorResponse(error.response.data)
+      } else {
+        Toast.fail(error.message || '网络错误，请稍后重试')
+      }
+      // 刷新验证码
+      this.refreshCaptcha()
+      this.form.captchaCode = ''
+    },
     async onSubmit () {
+      if (!this.captchaKey) {
+        Toast.fail('请先获取验证码')
+        this.refreshCaptcha()
+        return
+      }
       this.loading = true
       try {
         const res = await authApi.register({
           phone: this.form.phone,
-          password: this.form.password
+          password: this.form.password,
+          captchaKey: this.captchaKey,
+          captchaCode: this.form.captchaCode
         })
         if (res.code === 200) {
           Toast.success('注册成功')
           this.$router.push('/login')
         } else {
-          Toast.fail(res.message || '注册失败')
+          this.handleErrorResponse(res)
         }
       } catch (error) {
-        Toast.fail(error.message || '注册失败，请稍后重试')
+        this.handleError(error)
       } finally {
         this.loading = false
       }
@@ -153,6 +248,38 @@ export default {
     color: #1989fa;
     text-decoration: none;
     margin-left: 4px;
+  }
+}
+
+.captcha-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  min-width: 100px;
+  height: 36px;
+  
+  .captcha-image {
+    width: 100px;
+    height: 36px;
+    border-radius: 4px;
+    border: 1px solid #ebedf0;
+  }
+  
+  .captcha-loading {
+    width: 100px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7f8fa;
+    border-radius: 4px;
+  }
+  
+  .captcha-tip {
+    font-size: 12px;
+    color: #969799;
+    margin-left: 8px;
+    white-space: nowrap;
   }
 }
 </style>

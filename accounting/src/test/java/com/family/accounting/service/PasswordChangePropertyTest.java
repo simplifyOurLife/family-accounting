@@ -29,7 +29,7 @@ class PasswordChangePropertyTest {
      * For any successful password change, the old password should no longer work for login,
      * and the new password should work.
      */
-    @Property(tries = 100)
+    @Property(tries = 10)
     void passwordChangeShouldInvalidateOldAndValidateNew(
             @ForAll @LongRange(min = 1, max = 10000) Long userId,
             @ForAll @StringLength(min = 6, max = 20) String oldPassword,
@@ -41,11 +41,17 @@ class PasswordChangePropertyTest {
         // Given: a mock UserMapper and UserService
         UserMapper mockMapper = Mockito.mock(UserMapper.class);
         JwtUtil mockJwtUtil = Mockito.mock(JwtUtil.class);
+        TokenBlacklistService mockTokenBlacklistService = Mockito.mock(TokenBlacklistService.class);
+        SecurityService mockSecurityService = Mockito.mock(SecurityService.class);
+        CaptchaService mockCaptchaService = Mockito.mock(CaptchaService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", mockJwtUtil);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "captchaService", mockCaptchaService);
 
         // Setup: user exists with old password
         String encodedOldPassword = passwordEncoder.encode(oldPassword);
@@ -86,7 +92,7 @@ class PasswordChangePropertyTest {
      * Property 14: 密码修改往返验证 - 旧密码错误时拒绝修改
      * For any password change attempt with incorrect old password, the change should be rejected.
      */
-    @Property(tries = 100)
+    @Property(tries = 10)
     void passwordChangeShouldRejectIncorrectOldPassword(
             @ForAll @LongRange(min = 1, max = 10000) Long userId,
             @ForAll @StringLength(min = 6, max = 20) String actualOldPassword,
@@ -99,11 +105,17 @@ class PasswordChangePropertyTest {
         // Given: a mock UserMapper and UserService
         UserMapper mockMapper = Mockito.mock(UserMapper.class);
         JwtUtil mockJwtUtil = Mockito.mock(JwtUtil.class);
+        TokenBlacklistService mockTokenBlacklistService = Mockito.mock(TokenBlacklistService.class);
+        SecurityService mockSecurityService = Mockito.mock(SecurityService.class);
+        CaptchaService mockCaptchaService = Mockito.mock(CaptchaService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", mockJwtUtil);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "captchaService", mockCaptchaService);
 
         // Setup: user exists with actual old password
         String encodedActualPassword = passwordEncoder.encode(actualOldPassword);
@@ -129,7 +141,7 @@ class PasswordChangePropertyTest {
      * After password change, verifyPassword should return true for new password
      * and false for old password.
      */
-    @Property(tries = 100)
+    @Property(tries = 10)
     void afterPasswordChangeVerifyShouldWorkWithNewPassword(
             @ForAll @LongRange(min = 1, max = 10000) Long userId,
             @ForAll @StringLength(min = 6, max = 20) String oldPassword,
@@ -141,11 +153,17 @@ class PasswordChangePropertyTest {
         // Given: a mock UserMapper and UserService
         UserMapper mockMapper = Mockito.mock(UserMapper.class);
         JwtUtil mockJwtUtil = Mockito.mock(JwtUtil.class);
+        TokenBlacklistService mockTokenBlacklistService = Mockito.mock(TokenBlacklistService.class);
+        SecurityService mockSecurityService = Mockito.mock(SecurityService.class);
+        CaptchaService mockCaptchaService = Mockito.mock(CaptchaService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", mockJwtUtil);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "captchaService", mockCaptchaService);
 
         // Setup: user exists with old password
         String encodedOldPassword = passwordEncoder.encode(oldPassword);

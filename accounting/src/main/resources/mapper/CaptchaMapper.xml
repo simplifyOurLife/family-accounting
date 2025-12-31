@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.family.accounting.mapper.CaptchaMapper">
+    
+    <!-- 结果映射 -->
+    <resultMap id="CaptchaResultMap" type="com.family.accounting.entity.Captcha">
+        <id property="id" column="id"/>
+        <result property="captchaKey" column="captcha_key"/>
+        <result property="code" column="code"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="expiredAt" column="expired_at"/>
+    </resultMap>
+    
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, captcha_key, code, created_at, expired_at
+    </sql>
+    
+    <!-- 根据captchaKey查询验证码 -->
+    <select id="findByCaptchaKey" resultMap="CaptchaResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_captcha
+        WHERE captcha_key = #{captchaKey}
+    </select>
+    
+    <!-- 插入新验证码 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.Captcha" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_captcha (captcha_key, code, expired_at)
+        VALUES (#{captchaKey}, #{code}, #{expiredAt})
+    </insert>
+    
+    <!-- 根据captchaKey删除验证码 -->
+    <delete id="deleteByCaptchaKey">
+        DELETE FROM t_captcha
+        WHERE captcha_key = #{captchaKey}
+    </delete>
+    
+    <!-- 删除过期的验证码 -->
+    <delete id="deleteExpired">
+        DELETE FROM t_captcha
+        WHERE expired_at &lt; #{expiredBefore}
+    </delete>
+    
+</mapper>

@@ -1,6 +1,11 @@
 import request from '../request'
 
 export default {
+  // 获取图片验证码
+  getCaptcha () {
+    return request.get('/auth/captcha')
+  },
+
   // 用户注册
   register (data) {
     return request.post('/auth/register', data)
