@@ -29,7 +29,6 @@ target/
 /.nb-gradle/
 node_modules/
 
-
 ### VS Code ###
 .vscode/
 **/*.jar
@@ -39,10 +38,8 @@ node_modules/
 /package-lock.json
 /dim-data-front/package-lock.json
 
-
 ### Kiro ###
 .kiro
-
 
 ### H2 ###
 /*/.jqwik-database
