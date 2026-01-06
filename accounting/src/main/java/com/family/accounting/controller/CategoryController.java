@@ -1,15 +1,16 @@
 package com.family.accounting.controller;
 
-import com.family.accounting.dto.CategoryDTO;
-import com.family.accounting.dto.CategoryVO;
-import com.family.accounting.dto.Result;
+import com.family.accounting.config.DefaultCategoryConfig;
+import com.family.accounting.dto.*;
 import com.family.accounting.security.SecurityUtils;
 import com.family.accounting.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 分类管理控制器
@@ -45,6 +46,37 @@ public class CategoryController {
         Long userId = SecurityUtils.getCurrentUserId();
         List<CategoryVO> categories = categoryService.getCategoryList(userId, type);
         return Result.success(categories);
+    }
+
+    /**
+     * 获取可用图标列表
+     * 返回按分类组织的图标列表，供前端图标选择器使用
+     *
+     * @return 按分类组织的图标列表
+     */
+    @GetMapping("/icons")
+    public Result<List<IconCategoryVO>> getAvailableIcons() {
+        List<IconCategoryVO> result = new ArrayList<>();
+
+        for (Map.Entry<String, List<DefaultCategoryConfig.IconInfo>> entry : 
+                DefaultCategoryConfig.ICON_LIBRARY.entrySet()) {
+            String categoryName = entry.getKey();
+            List<DefaultCategoryConfig.IconInfo> iconInfos = entry.getValue();
+
+            List<IconVO> icons = new ArrayList<>();
+            for (DefaultCategoryConfig.IconInfo iconInfo : iconInfos) {
+                icons.add(new IconVO(
+                        iconInfo.getId(),
+                        iconInfo.getName(),
+                        categoryName,
+                        iconInfo.getType()
+                ));
+            }
+
+            result.add(new IconCategoryVO(categoryName, icons));
+        }
+
+        return Result.success(result);
     }
 
     /**

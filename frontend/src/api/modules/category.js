@@ -19,5 +19,10 @@ export default {
   // 删除分类
   delete (id) {
     return request.delete(`/category/${id}`)
+  },
+
+  // 获取可用图标列表
+  getIcons () {
+    return request.get('/category/icons')
   }
 }

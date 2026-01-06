@@ -1,5 +1,6 @@
 package com.family.accounting.service;
 
+import com.family.accounting.config.DefaultCategoryConfig;
 import com.family.accounting.dto.CategoryDTO;
 import com.family.accounting.dto.CategoryVO;
 import com.family.accounting.entity.Category;
@@ -124,12 +125,21 @@ public class CategoryService {
             }
         }
 
+        // 处理图标ID - 如果提供了图标ID则验证有效性，否则使用默认图标
+        String iconId = dto.getIcon();
+        if (iconId != null && !iconId.trim().isEmpty()) {
+            // 验证图标ID有效性，如果无效则使用默认图标
+            iconId = DefaultCategoryConfig.getIconIdOrDefault(iconId);
+        } else {
+            iconId = DefaultCategoryConfig.DEFAULT_ICON;
+        }
+
         Category category = new Category();
         category.setFamilyId(familyId);
         category.setParentId(dto.getParentId());
         category.setName(dto.getName());
         category.setType(dto.getType());
-        category.setIcon(dto.getIcon());
+        category.setIcon(iconId);
         category.setSortOrder(dto.getSortOrder() != null ? dto.getSortOrder() : 0);
 
         categoryMapper.insert(category);
@@ -165,7 +175,9 @@ public class CategoryService {
             category.setName(dto.getName());
         }
         if (dto.getIcon() != null) {
-            category.setIcon(dto.getIcon());
+            // 验证图标ID有效性，如果无效则使用默认图标
+            String iconId = DefaultCategoryConfig.getIconIdOrDefault(dto.getIcon());
+            category.setIcon(iconId);
         }
         if (dto.getSortOrder() != null) {
             category.setSortOrder(dto.getSortOrder());
@@ -286,7 +298,8 @@ public class CategoryService {
         vo.setName(category.getName());
         vo.setType(category.getType());
         vo.setTypeText(category.getType() == Category.TYPE_EXPENSE ? "支出" : "收入");
-        vo.setIcon(category.getIcon());
+        // 使用默认图标回退机制
+        vo.setIcon(DefaultCategoryConfig.getIconIdOrDefault(category.getIcon()));
         vo.setSortOrder(category.getSortOrder());
         vo.setCreatedAt(category.getCreatedAt());
 
