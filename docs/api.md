@@ -51,7 +51,6 @@
 
 获取登录/注册所需的图片验证码。
 
-
 **请求**
 
 ```
@@ -80,6 +79,7 @@ GET /api/auth/captcha
 - 验证码有效期为 5 分钟
 - 验证码验证后立即失效（无论成功或失败）
 - 验证码验证时大小写不敏感
+- 字符集：数字和大写字母（排除易混淆字符 0/O/1/I/L）
 
 ---
 
@@ -111,7 +111,6 @@ Content-Type: application/json
 | nickname | string | 否 | 昵称（最长50字符） |
 | captchaKey | string | 是 | 验证码标识 |
 | captchaCode | string | 是 | 验证码（4位） |
-
 
 **响应**
 
@@ -189,7 +188,6 @@ Content-Type: application/json
 GET /api/auth/info
 Authorization: Bearer <token>
 ```
-
 
 **响应**
 
@@ -278,7 +276,6 @@ Content-Type: application/json
 - 创建家庭时会自动创建默认分类和默认账本
 
 ---
-
 
 ### 获取当前家庭信息
 
@@ -381,7 +378,6 @@ Content-Type: application/json
 
 ---
 
-
 ### 获取待处理邀请列表
 
 获取当前用户收到的待处理邀请。
@@ -477,7 +473,6 @@ Authorization: Bearer <token>
 ```
 
 ---
-
 
 ### 获取家庭成员列表
 
@@ -590,7 +585,6 @@ Authorization: Bearer <token>
 
 获取家庭的分类树结构。
 
-
 **请求**
 
 ```
@@ -701,7 +695,6 @@ Authorization: Bearer <token>
 |------|------|------|
 | id | long | 分类ID |
 
-
 **响应**
 
 ```json
@@ -807,7 +800,6 @@ Content-Type: application/json
 }
 ```
 
-
 **响应**
 
 ```json
@@ -860,6 +852,7 @@ Authorization: Bearer <token>
 
 **说明**
 - 有关联交易的分类不能删除
+- 有子分类的分类不能删除
 
 ---
 
@@ -890,6 +883,53 @@ Authorization: Bearer <token>
 
 ---
 
+### 获取可用图标列表
+
+获取系统提供的所有可用图标。
+
+**请求**
+
+```
+GET /api/category/icons
+Authorization: Bearer <token>
+```
+
+**响应**
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "category": "餐饮",
+      "icons": [
+        { "id": "food", "name": "餐饮", "type": "vant" },
+        { "id": "restaurant", "name": "餐厅", "type": "vant" },
+        { "id": "coffee", "name": "咖啡", "type": "vant" }
+      ]
+    },
+    {
+      "category": "交通",
+      "icons": [
+        { "id": "car", "name": "汽车", "type": "vant" },
+        { "id": "bus", "name": "公交", "type": "vant" }
+      ]
+    }
+  ]
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| category | string | 图标分类名称 |
+| icons | array | 该分类下的图标列表 |
+| icons[].id | string | 图标唯一标识 |
+| icons[].name | string | 图标显示名称 |
+| icons[].type | string | 图标类型（vant/custom） |
+
+---
+
 ## 账本管理模块
 
 ### 获取账本列表
@@ -902,7 +942,6 @@ Authorization: Bearer <token>
 GET /api/account-book
 Authorization: Bearer <token>
 ```
-
 
 **响应**
 
@@ -1023,7 +1062,6 @@ Content-Type: application/json
 |------|------|------|------|
 | name | string | 是 | 账本名称（最长50字符） |
 
-
 **响应**
 
 ```json
@@ -1112,6 +1150,10 @@ Authorization: Bearer <token>
 }
 ```
 
+**说明**
+- 默认账本不能删除
+- 有交易记录的账本需要 force=true 才能删除
+
 ---
 
 ### 设为默认账本
@@ -1140,7 +1182,6 @@ Authorization: Bearer <token>
 ```
 
 ---
-
 
 ### 检查账本是否可删除
 
@@ -1228,7 +1269,6 @@ Authorization: Bearer <token>
 ```
 
 ---
-
 
 ### 获取交易记录详情
 
@@ -1333,7 +1373,6 @@ Content-Type: application/json
 
 ---
 
-
 ### 更新交易记录
 
 更新已有的交易记录。
@@ -1433,7 +1472,6 @@ Authorization: Bearer <token>
 | accountBookId | long | 否 | 账本ID，为空则使用默认账本 |
 | date | date | 否 | 日期（格式: yyyy-MM-dd），默认今天 |
 
-
 **响应**
 
 ```json
@@ -1525,7 +1563,6 @@ Authorization: Bearer <token>
 | accountBookId | long | 否 | 账本ID，为空则使用默认账本 |
 | year | int | 否 | 年份，默认当前年 |
 | month | int | 否 | 月份（1-12），默认当前月 |
-
 
 **响应**
 
@@ -1632,7 +1669,6 @@ Authorization: Bearer <token>
 
 ---
 
-
 ## 用户设置模块
 
 ### 修改密码
@@ -1724,7 +1760,7 @@ Content-Type: application/json
 |------|------|------|
 | long | 64位整数 | 1, 100, 999999 |
 | int | 32位整数 | 1, 100 |
-| decimal | 精确小数 | 35.50, 1000.00 |
+| decimal | 精确小数（DECIMAL(12,2)） | 35.50, 1000.00 |
 | string | 字符串 | "张三" |
 | boolean | 布尔值 | true, false |
 | date | 日期 | "2024-01-15" |
@@ -1750,6 +1786,8 @@ Content-Type: application/json
 
 ## 安全说明
 
+### 认证要求
+
 1. 所有需要认证的接口必须在请求头中携带 Token：
    ```
    Authorization: Bearer <token>
@@ -1757,8 +1795,37 @@ Content-Type: application/json
 
 2. Token 过期后需要重新登录获取新 Token
 
-3. 登录失败 5 次后账户将被锁定 30 分钟
+### 图片验证码
 
-4. 单个 IP 每分钟请求超过 100 次将被限制
+1. 验证码有效期为 5 分钟
+2. 验证码验证后立即失效（无论成功或失败）
+3. 验证码验证时大小写不敏感
+4. 字符集：数字和大写字母（排除易混淆字符 0/O/1/I/L）
+5. 图片尺寸：120x40 像素，包含干扰线和噪点
 
-5. 密码修改后所有现有 Token 将失效
+### 登录保护
+
+1. 15分钟内登录失败 5 次后账户将被锁定 30 分钟
+2. 所有登录尝试（成功/失败）都会记录 IP 地址和时间戳
+3. 密码修改后所有现有 Token 将失效
+
+### IP 限流
+
+1. 单个 IP 每分钟请求超过 100 次将被限制
+2. 基于滑动窗口的请求计数机制
+
+---
+
+## 更新日志
+
+### v1.0.0 (2024-01)
+- 初始版本发布
+- 实现用户认证模块（注册、登录、登出）
+- 实现图片验证码系统
+- 实现安全防护机制（登录锁定、IP限流）
+- 实现家庭管理模块
+- 实现分类管理模块（支持图标选择）
+- 实现账本管理模块
+- 实现记账模块
+- 实现统计模块
+- 实现用户设置模块
