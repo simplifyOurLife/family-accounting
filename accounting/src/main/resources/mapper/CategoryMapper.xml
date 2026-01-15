@@ -86,4 +86,22 @@
         WHERE family_id = #{familyId}
     </select>
     
+    <!-- 递归查询分类及其所有子分类的ID列表 -->
+    <select id="findAllDescendantIds" resultType="long">
+        WITH RECURSIVE category_tree AS (
+            -- 基础查询：选择指定的分类
+            SELECT id
+            FROM t_category
+            WHERE id = #{categoryId}
+            
+            UNION ALL
+            
+            -- 递归查询：选择所有子分类
+            SELECT c.id
+            FROM t_category c
+            INNER JOIN category_tree ct ON c.parent_id = ct.id
+        )
+        SELECT id FROM category_tree
+    </select>
+    
 </mapper>

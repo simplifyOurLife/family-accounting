@@ -169,3 +169,52 @@ CREATE TABLE IF NOT EXISTS t_token_blacklist (
     INDEX idx_expired_at (token_expired_at),
     CONSTRAINT fk_blacklist_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='JWT令牌黑名单表';
+
+-- =====================================================
+-- 12. 搜索历史表 (t_search_history)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS t_search_history (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '搜索历史ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    family_id BIGINT NOT NULL COMMENT '家庭ID',
+    keyword VARCHAR(200) NOT NULL COMMENT '搜索关键词',
+    search_count INT DEFAULT 1 COMMENT '搜索次数',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_user_family (user_id, family_id),
+    INDEX idx_keyword (keyword),
+    INDEX idx_updated_at (updated_at),
+    CONSTRAINT fk_search_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE,
+    CONSTRAINT fk_search_family FOREIGN KEY (family_id) REFERENCES t_family(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='搜索历史表';
+
+-- =====================================================
+-- 13. 保存的筛选条件表 (t_saved_filter)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS t_saved_filter (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '筛选条件ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    family_id BIGINT NOT NULL COMMENT '家庭ID',
+    name VARCHAR(50) NOT NULL COMMENT '筛选条件名称',
+    filter_json TEXT NOT NULL COMMENT '筛选条件JSON',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_user_family (user_id, family_id),
+    CONSTRAINT fk_filter_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE,
+    CONSTRAINT fk_filter_family FOREIGN KEY (family_id) REFERENCES t_family(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='保存的筛选条件表';
+
+-- =====================================================
+-- 添加交易记录表的搜索优化索引
+-- =====================================================
+-- 备注全文索引（用于关键词搜索）
+ALTER TABLE t_transaction ADD FULLTEXT INDEX idx_note_fulltext (note) WITH PARSER ngram;
+
+-- 金额范围查询索引
+ALTER TABLE t_transaction ADD INDEX idx_amount (amount);
+
+-- 复合查询索引（账本+日期+金额）
+ALTER TABLE t_transaction ADD INDEX idx_book_date_amount (account_book_id, transaction_date, amount);
+
+-- 类型筛选索引
+ALTER TABLE t_transaction ADD INDEX idx_type (type);

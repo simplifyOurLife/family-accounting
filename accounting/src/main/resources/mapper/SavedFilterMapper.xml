@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.family.accounting.mapper.SavedFilterMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="SavedFilterResultMap" type="com.family.accounting.entity.SavedFilter">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="familyId" column="family_id"/>
+        <result property="name" column="name"/>
+        <result property="filterJson" column="filter_json"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 插入筛选条件 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.SavedFilter"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_saved_filter (user_id, family_id, name, filter_json)
+        VALUES (#{userId}, #{familyId}, #{name}, #{filterJson})
+    </insert>
+
+    <!-- 更新筛选条件 -->
+    <update id="update" parameterType="com.family.accounting.entity.SavedFilter">
+        UPDATE t_saved_filter
+        SET name = #{name},
+            filter_json = #{filterJson},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </update>
+
+    <!-- 根据ID查询筛选条件 -->
+    <select id="findById" resultMap="SavedFilterResultMap">
+        SELECT id, user_id, family_id, name, filter_json, created_at, updated_at
+        FROM t_saved_filter
+        WHERE id = #{id}
+          AND user_id = #{userId}
+        LIMIT 1
+    </select>
+
+    <!-- 获取用户的所有保存的筛选条件 -->
+    <select id="findByUserAndFamily" resultMap="SavedFilterResultMap">
+        SELECT id, user_id, family_id, name, filter_json, created_at, updated_at
+        FROM t_saved_filter
+        WHERE user_id = #{userId}
+          AND family_id = #{familyId}
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 删除筛选条件 -->
+    <delete id="deleteById">
+        DELETE FROM t_saved_filter
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </delete>
+
+    <!-- 根据名称查询筛选条件 -->
+    <select id="findByName" resultMap="SavedFilterResultMap">
+        SELECT id, user_id, family_id, name, filter_json, created_at, updated_at
+        FROM t_saved_filter
+        WHERE user_id = #{userId}
+          AND family_id = #{familyId}
+          AND name = #{name}
+        LIMIT 1
+    </select>
+
+</mapper>

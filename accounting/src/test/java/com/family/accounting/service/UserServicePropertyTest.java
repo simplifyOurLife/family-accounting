@@ -40,11 +40,20 @@ class UserServicePropertyTest {
         // Given: a mock UserMapper and UserService
         UserMapper mockMapper = Mockito.mock(UserMapper.class);
         JwtUtil mockJwtUtil = Mockito.mock(JwtUtil.class);
+        CaptchaService mockCaptchaService = Mockito.mock(CaptchaService.class);
+        SecurityService mockSecurityService = Mockito.mock(SecurityService.class);
+        TokenBlacklistService mockTokenBlacklistService = Mockito.mock(TokenBlacklistService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", mockJwtUtil);
+        setField(userService, "captchaService", mockCaptchaService);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+
+        // Setup: captcha verification returns true (bypass captcha check)
+        when(mockCaptchaService.verifyCaptcha(any(), any())).thenReturn(true);
 
         // Setup: phone does not exist
         when(mockMapper.existsByPhone(phone)).thenReturn(0);
@@ -89,11 +98,20 @@ class UserServicePropertyTest {
         // Given: a mock UserMapper and UserService
         UserMapper mockMapper = Mockito.mock(UserMapper.class);
         JwtUtil mockJwtUtil = Mockito.mock(JwtUtil.class);
+        CaptchaService mockCaptchaService = Mockito.mock(CaptchaService.class);
+        SecurityService mockSecurityService = Mockito.mock(SecurityService.class);
+        TokenBlacklistService mockTokenBlacklistService = Mockito.mock(TokenBlacklistService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", mockJwtUtil);
+        setField(userService, "captchaService", mockCaptchaService);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+
+        // Setup: captcha verification returns true (bypass captcha check)
+        when(mockCaptchaService.verifyCaptcha(any(), any())).thenReturn(true);
 
         // Setup: phone does not exist
         when(mockMapper.existsByPhone(phone)).thenReturn(0);
@@ -134,11 +152,20 @@ class UserServicePropertyTest {
         // Given: a mock UserMapper and UserService
         UserMapper mockMapper = Mockito.mock(UserMapper.class);
         JwtUtil mockJwtUtil = Mockito.mock(JwtUtil.class);
+        CaptchaService mockCaptchaService = Mockito.mock(CaptchaService.class);
+        SecurityService mockSecurityService = Mockito.mock(SecurityService.class);
+        TokenBlacklistService mockTokenBlacklistService = Mockito.mock(TokenBlacklistService.class);
 
         UserService userService = new UserService();
         setField(userService, "userMapper", mockMapper);
         setField(userService, "passwordEncoder", passwordEncoder);
         setField(userService, "jwtUtil", mockJwtUtil);
+        setField(userService, "captchaService", mockCaptchaService);
+        setField(userService, "securityService", mockSecurityService);
+        setField(userService, "tokenBlacklistService", mockTokenBlacklistService);
+
+        // Setup: captcha verification returns true (bypass captcha check)
+        when(mockCaptchaService.verifyCaptcha(any(), any())).thenReturn(true);
 
         // Setup: phone already exists
         when(mockMapper.existsByPhone(phone)).thenReturn(1);

@@ -115,4 +115,58 @@ public interface TransactionMapper {
      * @return 影响行数
      */
     int deleteByAccountBookId(@Param("accountBookId") Long accountBookId);
+    
+    /**
+     * 复杂条件搜索交易记录
+     *
+     * @param accountBookId 账本ID
+     * @param keyword       关键词（用于备注搜索）
+     * @param startDate     开始日期
+     * @param endDate       结束日期
+     * @param minAmount     最小金额
+     * @param maxAmount     最大金额
+     * @param categoryIds   分类ID列表（包含子分类）
+     * @param memberIds     成员ID列表
+     * @param type          交易类型
+     * @param offset        偏移量
+     * @param limit         每页数量
+     * @return 交易记录列表
+     */
+    List<Transaction> searchTransactions(
+            @Param("accountBookId") Long accountBookId,
+            @Param("keyword") String keyword,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("minAmount") java.math.BigDecimal minAmount,
+            @Param("maxAmount") java.math.BigDecimal maxAmount,
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("memberIds") List<Long> memberIds,
+            @Param("type") Integer type,
+            @Param("offset") int offset,
+            @Param("limit") int limit);
+    
+    /**
+     * 统计复杂条件搜索的交易记录数量
+     *
+     * @param accountBookId 账本ID
+     * @param keyword       关键词（用于备注搜索）
+     * @param startDate     开始日期
+     * @param endDate       结束日期
+     * @param minAmount     最小金额
+     * @param maxAmount     最大金额
+     * @param categoryIds   分类ID列表（包含子分类）
+     * @param memberIds     成员ID列表
+     * @param type          交易类型
+     * @return 记录数量
+     */
+    int countSearchTransactions(
+            @Param("accountBookId") Long accountBookId,
+            @Param("keyword") String keyword,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("minAmount") java.math.BigDecimal minAmount,
+            @Param("maxAmount") java.math.BigDecimal maxAmount,
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("memberIds") List<Long> memberIds,
+            @Param("type") Integer type);
 }

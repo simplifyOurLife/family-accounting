@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -58,7 +59,7 @@ class LoginPropertyTest {
         existingUser.setNickname("TestUser");
 
         when(mockMapper.findByPhone(phone)).thenReturn(existingUser);
-        when(mockCaptchaService.verifyCaptcha(anyString(), anyString())).thenReturn(true);
+        when(mockCaptchaService.verifyCaptcha(any(), any())).thenReturn(true);
 
         // When: logging in with correct credentials
         LoginDTO dto = new LoginDTO();
@@ -119,7 +120,7 @@ class LoginPropertyTest {
         existingUser.setPassword(passwordEncoder.encode(correctPassword));
 
         when(mockMapper.findByPhone(phone)).thenReturn(existingUser);
-        when(mockCaptchaService.verifyCaptcha(anyString(), anyString())).thenReturn(true);
+        when(mockCaptchaService.verifyCaptcha(any(), any())).thenReturn(true);
 
         // When: logging in with wrong password
         LoginDTO dto = new LoginDTO();
@@ -156,7 +157,7 @@ class LoginPropertyTest {
 
         // Setup: user does not exist
         when(mockMapper.findByPhone(phone)).thenReturn(null);
-        when(mockCaptchaService.verifyCaptcha(anyString(), anyString())).thenReturn(true);
+        when(mockCaptchaService.verifyCaptcha(any(), any())).thenReturn(true);
 
         // When: logging in with non-existent phone
         LoginDTO dto = new LoginDTO();

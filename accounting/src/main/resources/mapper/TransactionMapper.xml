@@ -115,4 +115,80 @@
         DELETE FROM t_transaction WHERE account_book_id = #{accountBookId}
     </delete>
     
+    <!-- 复杂条件搜索交易记录 -->
+    <select id="searchTransactions" resultMap="TransactionResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_transaction
+        WHERE account_book_id = #{accountBookId}
+        <if test="keyword != null and keyword != ''">
+            AND MATCH(note) AGAINST(#{keyword} IN BOOLEAN MODE)
+        </if>
+        <if test="startDate != null">
+            AND transaction_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND transaction_date &lt;= #{endDate}
+        </if>
+        <if test="minAmount != null">
+            AND amount &gt;= #{minAmount}
+        </if>
+        <if test="maxAmount != null">
+            AND amount &lt;= #{maxAmount}
+        </if>
+        <if test="categoryIds != null and categoryIds.size() > 0">
+            AND category_id IN
+            <foreach collection="categoryIds" item="categoryId" open="(" separator="," close=")">
+                #{categoryId}
+            </foreach>
+        </if>
+        <if test="memberIds != null and memberIds.size() > 0">
+            AND user_id IN
+            <foreach collection="memberIds" item="memberId" open="(" separator="," close=")">
+                #{memberId}
+            </foreach>
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        ORDER BY transaction_date DESC, created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 统计复杂条件搜索的交易记录数量 -->
+    <select id="countSearchTransactions" resultType="int">
+        SELECT COUNT(1)
+        FROM t_transaction
+        WHERE account_book_id = #{accountBookId}
+        <if test="keyword != null and keyword != ''">
+            AND MATCH(note) AGAINST(#{keyword} IN BOOLEAN MODE)
+        </if>
+        <if test="startDate != null">
+            AND transaction_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND transaction_date &lt;= #{endDate}
+        </if>
+        <if test="minAmount != null">
+            AND amount &gt;= #{minAmount}
+        </if>
+        <if test="maxAmount != null">
+            AND amount &lt;= #{maxAmount}
+        </if>
+        <if test="categoryIds != null and categoryIds.size() > 0">
+            AND category_id IN
+            <foreach collection="categoryIds" item="categoryId" open="(" separator="," close=")">
+                #{categoryId}
+            </foreach>
+        </if>
+        <if test="memberIds != null and memberIds.size() > 0">
+            AND user_id IN
+            <foreach collection="memberIds" item="memberId" open="(" separator="," close=")">
+                #{memberId}
+            </foreach>
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+    </select>
+    
 </mapper>

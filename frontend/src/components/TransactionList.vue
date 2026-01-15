@@ -33,7 +33,7 @@
                   </div>
                   <div class="item-info">
                     <div class="category-name">{{ item.categoryName }}</div>
-                    <div v-if="item.note" class="note">{{ item.note }}</div>
+                    <div v-if="item.note" class="note" v-html="highlightKeyword(item.note)"></div>
                   </div>
                 </div>
                 <div class="item-right">
@@ -68,10 +68,18 @@
 
 <script>
 import transactionApi from '@/api/modules/transaction'
+import { searchTransactions } from '@/api/modules/search'
 import { Toast, Dialog } from 'vant'
 
 export default {
   name: 'TransactionList',
+  props: {
+    // 搜索参数
+    searchParams: {
+      type: Object,
+      default: null
+    }
+  },
   data () {
     return {
       transactions: [],
@@ -108,14 +116,36 @@ export default {
       )
     }
   },
+  watch: {
+    searchParams: {
+      handler () {
+        this.refresh()
+      },
+      deep: true
+    }
+  },
   methods: {
     async loadData () {
       try {
         console.log('Loading transaction data, page:', this.page, 'pageSize:', this.pageSize)
-        const res = await transactionApi.getList({
-          page: this.page,
-          size: this.pageSize
-        })
+        
+        let res
+        // 如果有搜索参数，使用搜索接口
+        if (this.searchParams) {
+          const searchData = {
+            ...this.searchParams,
+            page: this.page,
+            size: this.pageSize
+          }
+          res = await searchTransactions(searchData)
+        } else {
+          // 否则使用普通列表接口
+          res = await transactionApi.getList({
+            page: this.page,
+            size: this.pageSize
+          })
+        }
+        
         console.log('Transaction API response:', res)
         const data = res.data || {}
         const list = data.list || []
@@ -127,7 +157,7 @@ export default {
           this.transactions = [...this.transactions, ...list]
         }
 
-        this.finished = list.length < this.pageSize || this.page >= (data.totalPages || 1)
+        this.finished = list.length < this.pageSize || this.page >= (data.pages || data.totalPages || 1)
         console.log('Transactions loaded:', this.transactions.length, 'finished:', this.finished)
       } catch (error) {
         console.error('Failed to load transactions:', error)
@@ -214,6 +244,15 @@ export default {
     },
     beforeClose ({ position }) {
       return position !== 'right'
+    },
+    // 高亮搜索关键词
+    highlightKeyword (text) {
+      if (!this.searchParams || !this.searchParams.keyword) {
+        return text
+      }
+      const keyword = this.searchParams.keyword
+      const regex = new RegExp(`(${keyword})`, 'gi')
+      return text.replace(regex, '<span class="highlight">$1</span>')
     }
   }
 }
@@ -297,6 +336,13 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        
+        ::v-deep .highlight {
+          color: #1989fa;
+          background-color: #e8f4ff;
+          padding: 0 2px;
+          border-radius: 2px;
+        }
       }
     }
   }

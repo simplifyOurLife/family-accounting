@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.family.accounting.mapper.SearchHistoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="SearchHistoryResultMap" type="com.family.accounting.entity.SearchHistory">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="familyId" column="family_id"/>
+        <result property="keyword" column="keyword"/>
+        <result property="searchCount" column="search_count"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 插入搜索历史记录 -->
+    <insert id="insert" parameterType="com.family.accounting.entity.SearchHistory"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_search_history (user_id, family_id, keyword, search_count)
+        VALUES (#{userId}, #{familyId}, #{keyword}, #{searchCount})
+    </insert>
+
+    <!-- 根据用户ID、家庭ID和关键词查询搜索历史 -->
+    <select id="findByUserFamilyAndKeyword" resultMap="SearchHistoryResultMap">
+        SELECT id, user_id, family_id, keyword, search_count, created_at, updated_at
+        FROM t_search_history
+        WHERE user_id = #{userId}
+          AND family_id = #{familyId}
+          AND keyword = #{keyword}
+        LIMIT 1
+    </select>
+
+    <!-- 更新搜索次数 -->
+    <update id="incrementSearchCount">
+        UPDATE t_search_history
+        SET search_count = search_count + 1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取搜索建议（按搜索次数和更新时间排序） -->
+    <select id="findSuggestions" resultMap="SearchHistoryResultMap">
+        SELECT id, user_id, family_id, keyword, search_count, created_at, updated_at
+        FROM t_search_history
+        WHERE user_id = #{userId}
+          AND family_id = #{familyId}
+        ORDER BY search_count DESC, updated_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取用户的搜索历史列表 -->
+    <select id="findByUserAndFamily" resultMap="SearchHistoryResultMap">
+        SELECT id, user_id, family_id, keyword, search_count, created_at, updated_at
+        FROM t_search_history
+        WHERE user_id = #{userId}
+          AND family_id = #{familyId}
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 删除指定的搜索历史记录 -->
+    <delete id="deleteById">
+        DELETE FROM t_search_history
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </delete>
+
+    <!-- 清空用户的所有搜索历史 -->
+    <delete id="deleteByUserAndFamily">
+        DELETE FROM t_search_history
+        WHERE user_id = #{userId}
+          AND family_id = #{familyId}
+    </delete>
+
+</mapper>

@@ -91,18 +91,45 @@
     <div class="transaction-list-section">
       <div class="section-header">
         <span class="section-title">最近记录</span>
+        <van-button
+          size="small"
+          type="primary"
+          icon="filter-o"
+          @click="showFilterPanel = true"
+        >
+          筛选
+        </van-button>
       </div>
+      
+      <!-- 搜索栏 -->
+      <search-bar
+        :filters="searchFilters"
+        @search="onSearch"
+        @remove-filter="onRemoveFilter"
+        @clear-filters="onClearFilters"
+      />
+      
       <transaction-list
         ref="transactionList"
+        :search-params="searchParams"
         @edit="onEditTransaction"
       />
     </div>
+    
+    <!-- 筛选面板 -->
+    <filter-panel
+      v-model="showFilterPanel"
+      :filters="searchFilters"
+      @apply="onApplyFilters"
+    />
   </div>
 </template>
 
 <script>
 import CategoryPicker from '@/components/CategoryPicker.vue'
 import TransactionList from '@/components/TransactionList.vue'
+import SearchBar from '@/components/SearchBar.vue'
+import FilterPanel from '@/components/FilterPanel.vue'
 import transactionApi from '@/api/modules/transaction'
 import { Toast } from 'vant'
 
@@ -110,7 +137,9 @@ export default {
   name: 'Transaction',
   components: {
     CategoryPicker,
-    TransactionList
+    TransactionList,
+    SearchBar,
+    FilterPanel
   },
   data () {
     return {
@@ -125,7 +154,19 @@ export default {
       showDatePicker: false,
       currentDate: new Date(),
       maxDate: new Date(),
-      editingId: null
+      editingId: null,
+      showFilterPanel: false,
+      searchFilters: {
+        keyword: '',
+        startDate: null,
+        endDate: null,
+        minAmount: null,
+        maxAmount: null,
+        categoryIds: [],
+        memberIds: [],
+        type: null
+      },
+      searchParams: null
     }
   },
   computed: {
@@ -261,6 +302,91 @@ export default {
       this.currentDate = new Date(transaction.transactionDate)
       // 滚动到顶部
       window.scrollTo({ top: 0, behavior: 'smooth' })
+    },
+    // 搜索交易
+    onSearch (keyword) {
+      this.searchFilters.keyword = keyword
+      this.updateSearchParams()
+    },
+    // 移除单个筛选条件
+    onRemoveFilter (filterType) {
+      switch (filterType) {
+        case 'dateRange':
+          this.searchFilters.startDate = null
+          this.searchFilters.endDate = null
+          break
+        case 'amountRange':
+          this.searchFilters.minAmount = null
+          this.searchFilters.maxAmount = null
+          break
+        case 'category':
+          this.searchFilters.categoryIds = []
+          break
+        case 'member':
+          this.searchFilters.memberIds = []
+          break
+        case 'type':
+          this.searchFilters.type = null
+          break
+      }
+      this.updateSearchParams()
+    },
+    // 清空所有筛选条件
+    onClearFilters () {
+      this.searchFilters = {
+        keyword: '',
+        startDate: null,
+        endDate: null,
+        minAmount: null,
+        maxAmount: null,
+        categoryIds: [],
+        memberIds: [],
+        type: null
+      }
+      this.updateSearchParams()
+    },
+    // 应用筛选条件
+    onApplyFilters (filters) {
+      this.searchFilters = { ...filters }
+      this.updateSearchParams()
+    },
+    // 更新搜索参数
+    updateSearchParams () {
+      // 构建搜索参数对象
+      const params = {}
+      
+      if (this.searchFilters.keyword) {
+        params.keyword = this.searchFilters.keyword
+      }
+      if (this.searchFilters.startDate) {
+        params.startDate = this.searchFilters.startDate
+      }
+      if (this.searchFilters.endDate) {
+        params.endDate = this.searchFilters.endDate
+      }
+      if (this.searchFilters.minAmount) {
+        params.minAmount = this.searchFilters.minAmount
+      }
+      if (this.searchFilters.maxAmount) {
+        params.maxAmount = this.searchFilters.maxAmount
+      }
+      if (this.searchFilters.categoryIds && this.searchFilters.categoryIds.length > 0) {
+        params.categoryIds = this.searchFilters.categoryIds
+      }
+      if (this.searchFilters.memberIds && this.searchFilters.memberIds.length > 0) {
+        params.memberIds = this.searchFilters.memberIds
+      }
+      if (this.searchFilters.type) {
+        params.type = this.searchFilters.type
+      }
+      
+      // 更新搜索参数，触发列表刷新
+      this.searchParams = Object.keys(params).length > 0 ? params : null
+      
+      // 刷新交易列表
+      this.$nextTick(() => {
+        this.$refs.transactionList && this.$refs.transactionList.refresh()
+      })
     }
   }
 }
@@ -390,6 +516,9 @@ export default {
     padding: 12px 16px;
     background-color: #fff;
     border-bottom: 1px solid #ebedf0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
     .section-title {
       font-size: 14px;

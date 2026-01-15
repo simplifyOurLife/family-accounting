@@ -84,4 +84,12 @@ public interface CategoryMapper {
      * @return 分类数量
      */
     int countByFamilyId(@Param("familyId") Long familyId);
+    
+    /**
+     * 递归查询分类及其所有子分类的ID列表
+     *
+     * @param categoryId 分类ID
+     * @return 分类ID列表（包含自身和所有子分类）
+     */
+    List<Long> findAllDescendantIds(@Param("categoryId") Long categoryId);
 }
