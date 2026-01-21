@@ -8,13 +8,13 @@ RUN apk add --no-cache fontconfig ttf-dejavu bash
 RUN addgroup -g 1000 appuser && adduser -D -u 1000 -G appuser appuser
 
 WORKDIR /app
+
+# 复制启动脚本并设置权限（在切换用户之前）
+COPY start-docker.sh /app/start.sh
+RUN chmod +x /app/start.sh && chown appuser:appuser /app/start.sh
+
 USER appuser
 EXPOSE 6009
 
-# 复制启动脚本
-COPY start-docker.sh /app/start.sh
-RUN chmod +x /app/start.sh
-
 # 启动
 ENTRYPOINT ["/app/start.sh"]
-

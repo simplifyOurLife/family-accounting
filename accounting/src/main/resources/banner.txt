@@ -9,5 +9,6 @@
                                           \/__/                                                                         \_/__/
 
 Spring Boot Version: ${spring-boot.version}
+Spring Application Name: ${spring.application.name}
 Port: ${server.port}
 Pid: ${pid}
