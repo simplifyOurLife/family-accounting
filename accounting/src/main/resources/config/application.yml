@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 6009
   servlet:
     context-path: /
 
@@ -26,6 +26,13 @@ jwt:
   expiration: ${JWT_EXPIRATION:86400000}
 
 logging:
-  level:
+  level: 
     com.family.accounting: DEBUG
     org.springframework.security: DEBUG
+  file:
+    name: /app/logs/application.log
+    max-size: 10MB
+    max-history: 30
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

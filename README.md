@@ -127,7 +127,7 @@ cd accounting
 mvn spring-boot:run
 ```
 
-后端服务将在 `http://localhost:8080` 启动
+后端服务将在 `http://localhost:6009` 启动
 
 ### 4. 前端启动
 
@@ -141,12 +141,48 @@ npm install
 npm run serve
 ```
 
-前端服务将在 `http://localhost:8081` 启动
+前端服务将在 `http://localhost:5010` 启动
 
 ### 5. 构建生产版本
 
+#### 方式一：应用与 lib 分离打包（推荐）
+
+这种方式将应用代码、依赖库和配置文件分离，实现：
+- 更新应用时只需上传小的应用 JAR 文件（约 200-500 KB）
+- 修改配置时只需编辑配置文件后重启，无需重新打包
+
 ```bash
-# 后端打包
+# 后端打包（应用、lib、配置分离）
+cd accounting
+./build-separated.sh        # Linux/Mac
+# 或
+build-separated.bat         # Windows
+
+# 前端打包
+cd frontend
+npm run build
+```
+
+打包后的文件在 `accounting/target/release` 目录：
+- `accounting-1.0.0-SNAPSHOT.jar` - 应用 JAR（约 200-500 KB）
+- `lib/` - 依赖库目录（约 50-60 MB）
+- `config/` - 配置文件目录
+  - `application.yml` - 默认配置
+  - `application-dev.yml` - 开发环境配置
+  - `application-prod.yml` - 生产环境配置
+- `start.sh` / `start.bat` - 启动脚本
+- `restart.sh` / `restart.bat` - 重启脚本
+
+**三种更新场景：**
+1. **更新应用**：只需替换 `accounting-1.0.0-SNAPSHOT.jar` 文件
+2. **修改配置**：编辑 `config/application.yml` 后重启应用
+3. **更新依赖**：替换 `lib/` 目录（很少需要）
+
+
+#### 方式二：传统 Fat JAR 打包
+
+```bash
+# 后端打包（传统方式，所有依赖打包在一起）
 cd accounting
 mvn clean package -DskipTests
 
