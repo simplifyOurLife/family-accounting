@@ -167,8 +167,8 @@
 
 <script>
 import { getSavedFilters, saveFilter, applyFilter, deleteFilter } from '@/api/modules/search'
-import { getCategories } from '@/api/modules/category'
-import { getFamilyMembers } from '@/api/modules/family'
+import categoryApi from '@/api/modules/category'
+import familyApi from '@/api/modules/family'
 
 export default {
   name: 'FilterPanel',
@@ -262,14 +262,25 @@ export default {
     // 加载分类列表
     async loadCategories() {
       try {
-        const res = await getCategories()
-        if (res.code === 200) {
-          this.categories = res.data || []
-          this.categoryColumns = this.categories.map(cat => ({
-            text: cat.name,
-            value: cat.id
-          }))
+        // 获取支出和收入分类
+        const [expenseRes, incomeRes] = await Promise.all([
+          categoryApi.getTree(1),
+          categoryApi.getTree(2)
+        ])
+        
+        const categories = []
+        if (expenseRes.code === 200 && expenseRes.data) {
+          categories.push(...expenseRes.data)
         }
+        if (incomeRes.code === 200 && incomeRes.data) {
+          categories.push(...incomeRes.data)
+        }
+        
+        this.categories = categories
+        this.categoryColumns = categories.map(cat => ({
+          text: cat.name,
+          value: cat.id
+        }))
       } catch (error) {
         console.error('加载分类失败:', error)
       }
@@ -277,7 +288,7 @@ export default {
     // 加载成员列表
     async loadMembers() {
       try {
-        const res = await getFamilyMembers()
+        const res = await familyApi.getMembers()
         if (res.code === 200) {
           this.members = res.data || []
           this.memberColumns = this.members.map(member => ({

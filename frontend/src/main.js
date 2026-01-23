@@ -30,7 +30,10 @@ import {
   SwipeCell,
   Empty,
   Loading,
-  Overlay
+  Overlay,
+  Search,
+  Radio,
+  RadioGroup
 } from 'vant'
 
 // 注册 Vant 组件
@@ -60,6 +63,9 @@ Vue.use(SwipeCell)
 Vue.use(Empty)
 Vue.use(Loading)
 Vue.use(Overlay)
+Vue.use(Search)
+Vue.use(Radio)
+Vue.use(RadioGroup)
 
 Vue.config.productionTip = false
 

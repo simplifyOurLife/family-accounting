@@ -119,8 +119,14 @@ public class FilterService {
      */
     public List<SavedFilterVO> getSavedFilters() {
         Long userId = SecurityUtils.getCurrentUserId();
-        Long familyId = getCurrentFamilyId(userId);
         
+        // 获取家庭ID，如果用户未加入家庭则返回空列表
+        FamilyMember member = familyMemberMapper.findByUserId(userId);
+        if (member == null) {
+            return java.util.Collections.emptyList();
+        }
+        
+        Long familyId = member.getFamilyId();
         List<SavedFilter> savedFilters = savedFilterMapper.findByUserAndFamily(userId, familyId);
         return savedFilters.stream()
                 .map(this::convertToVO)

@@ -7,7 +7,7 @@ import request from '../request'
  */
 export function searchTransactions(data) {
   return request({
-    url: '/api/search/transactions',
+    url: '/search/transactions',
     method: 'post',
     data
   })
@@ -20,7 +20,7 @@ export function searchTransactions(data) {
  */
 export function getSearchSuggestions(limit = 10) {
   return request({
-    url: '/api/search/suggestions',
+    url: '/search/suggestions',
     method: 'get',
     params: { limit }
   })
@@ -32,7 +32,7 @@ export function getSearchSuggestions(limit = 10) {
  */
 export function getSearchHistory() {
   return request({
-    url: '/api/search/history',
+    url: '/search/history',
     method: 'get'
   })
 }
@@ -44,7 +44,7 @@ export function getSearchHistory() {
  */
 export function deleteSearchHistory(id) {
   return request({
-    url: `/api/search/history/${id}`,
+    url: `/search/history/${id}`,
     method: 'delete'
   })
 }
@@ -55,7 +55,7 @@ export function deleteSearchHistory(id) {
  */
 export function clearSearchHistory() {
   return request({
-    url: '/api/search/history',
+    url: '/search/history',
     method: 'delete'
   })
 }
@@ -67,7 +67,7 @@ export function clearSearchHistory() {
  */
 export function saveFilter(data) {
   return request({
-    url: '/api/filter/save',
+    url: '/filter/save',
     method: 'post',
     data
   })
@@ -81,7 +81,7 @@ export function saveFilter(data) {
  */
 export function updateFilter(id, data) {
   return request({
-    url: `/api/filter/${id}`,
+    url: `/filter/${id}`,
     method: 'put',
     data
   })
@@ -93,7 +93,7 @@ export function updateFilter(id, data) {
  */
 export function getSavedFilters() {
   return request({
-    url: '/api/filter/saved',
+    url: '/filter/saved',
     method: 'get'
   })
 }
@@ -105,7 +105,7 @@ export function getSavedFilters() {
  */
 export function getFilterById(id) {
   return request({
-    url: `/api/filter/${id}`,
+    url: `/filter/${id}`,
     method: 'get'
   })
 }
@@ -117,7 +117,7 @@ export function getFilterById(id) {
  */
 export function applyFilter(id) {
   return request({
-    url: `/api/filter/${id}/apply`,
+    url: `/filter/${id}/apply`,
     method: 'get'
   })
 }
@@ -129,7 +129,7 @@ export function applyFilter(id) {
  */
 export function deleteFilter(id) {
   return request({
-    url: `/api/filter/${id}`,
+    url: `/filter/${id}`,
     method: 'delete'
   })
 }
