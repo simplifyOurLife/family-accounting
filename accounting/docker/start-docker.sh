@@ -26,4 +26,4 @@ echo "时区: ${TZ:-Asia/Shanghai}"
 echo "=========================================="
 
 # 启动应用
-exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app/app.jar
+exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Djava.awt.headless=true -jar /app/app.jar
