@@ -115,6 +115,50 @@ mysql -u root -p family_accounting < accounting/src/main/resources/db/schema.sql
 mysql -u root -p family_accounting < accounting/src/main/resources/db/data.sql
 ```
 
+**注意事项：**
+- `schema.sql` - 包含所有表结构定义
+- `data.sql` - 包含默认分类等初始数据
+- `test-data.sql` - 测试数据（可选，仅用于开发测试）
+
+**数据库迁移：**
+
+如果你已经有旧版本的数据库，需要更新表结构，请按以下步骤操作：
+
+1. **备份现有数据库**
+   ```bash
+   mysqldump -u root -p family_accounting > backup.sql
+   ```
+
+2. **检查表结构差异**
+   ```sql
+   -- 连接到数据库
+   mysql -u root -p family_accounting
+   
+   -- 检查 t_saved_filter 表是否存在且结构正确
+   DESC t_saved_filter;
+   ```
+
+3. **更新表结构**（如果需要）
+   
+   如果 `t_saved_filter` 表结构不正确或缺少字段，最简单的方法是删除并重建：
+   
+   ```sql
+   -- 删除旧表（会丢失该表的数据）
+   DROP TABLE IF EXISTS t_saved_filter;
+   
+   -- 重新导入 schema.sql 来创建正确的表结构
+   SOURCE accounting/src/main/resources/db/schema.sql;
+   ```
+   
+   或者手动添加缺失的字段（如果表中有需要保留的数据）：
+   
+   ```sql
+   -- 示例：添加缺失的字段
+   ALTER TABLE t_saved_filter ADD COLUMN family_id BIGINT NOT NULL COMMENT '家庭ID' AFTER user_id;
+   ALTER TABLE t_saved_filter ADD COLUMN name VARCHAR(50) NOT NULL COMMENT '筛选条件名称';
+   -- ... 根据实际情况添加其他缺失字段
+   ```
+
 ### 3. 后端启动
 
 ```bash

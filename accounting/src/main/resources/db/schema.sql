@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS t_user (
     UNIQUE KEY uk_phone (phone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
+
 -- =====================================================
 -- 2. 家庭表 (t_family)
 -- =====================================================
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS t_family_member (
     CONSTRAINT fk_member_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='家庭成员表';
 
+
 -- =====================================================
 -- 4. 邀请表 (t_invitation)
 -- =====================================================
@@ -65,6 +67,7 @@ CREATE TABLE IF NOT EXISTS t_invitation (
     CONSTRAINT fk_invitation_inviter FOREIGN KEY (inviter_id) REFERENCES t_user(id) ON DELETE CASCADE,
     CONSTRAINT fk_invitation_invitee FOREIGN KEY (invitee_id) REFERENCES t_user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='邀请表';
+
 
 -- =====================================================
 -- 5. 分类表 (t_category)
@@ -96,6 +99,7 @@ CREATE TABLE IF NOT EXISTS t_account_book (
     CONSTRAINT fk_book_family FOREIGN KEY (family_id) REFERENCES t_family(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='账本表';
 
+
 -- =====================================================
 -- 7. 交易记录表 (t_transaction)
 -- =====================================================
@@ -117,6 +121,8 @@ CREATE TABLE IF NOT EXISTS t_transaction (
     CONSTRAINT fk_trans_category FOREIGN KEY (category_id) REFERENCES t_category(id) ON DELETE RESTRICT,
     CONSTRAINT fk_trans_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='交易记录表';
+
+
 -- =====================================================
 -- 8. 图片验证码表 (t_captcha)
 -- =====================================================
@@ -129,6 +135,7 @@ CREATE TABLE IF NOT EXISTS t_captcha (
     UNIQUE KEY uk_captcha_key (captcha_key),
     INDEX idx_expired (expired_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='图片验证码表';
+
 
 -- =====================================================
 -- 9. 登录尝试记录表 (t_login_attempt)
@@ -143,6 +150,7 @@ CREATE TABLE IF NOT EXISTS t_login_attempt (
     INDEX idx_ip_time (ip_address, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录尝试记录表';
 
+
 -- =====================================================
 -- 10. IP请求记录表 (t_ip_request)
 -- =====================================================
@@ -153,6 +161,7 @@ CREATE TABLE IF NOT EXISTS t_ip_request (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     INDEX idx_ip_time (ip_address, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IP请求记录表';
+
 
 -- =====================================================
 -- 11. JWT令牌黑名单表 (t_token_blacklist)
@@ -169,6 +178,7 @@ CREATE TABLE IF NOT EXISTS t_token_blacklist (
     INDEX idx_expired_at (token_expired_at),
     CONSTRAINT fk_blacklist_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='JWT令牌黑名单表';
+
 
 -- =====================================================
 -- 12. 搜索历史表 (t_search_history)
@@ -188,6 +198,7 @@ CREATE TABLE IF NOT EXISTS t_search_history (
     CONSTRAINT fk_search_family FOREIGN KEY (family_id) REFERENCES t_family(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='搜索历史表';
 
+
 -- =====================================================
 -- 13. 保存的筛选条件表 (t_saved_filter)
 -- =====================================================
@@ -203,6 +214,7 @@ CREATE TABLE IF NOT EXISTS t_saved_filter (
     CONSTRAINT fk_filter_user FOREIGN KEY (user_id) REFERENCES t_user(id) ON DELETE CASCADE,
     CONSTRAINT fk_filter_family FOREIGN KEY (family_id) REFERENCES t_family(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='保存的筛选条件表';
+
 
 -- =====================================================
 -- 添加交易记录表的搜索优化索引
